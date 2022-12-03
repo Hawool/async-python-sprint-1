@@ -1,15 +1,7 @@
-# import logging
-# import threading
-# import subprocess
-# import multiprocessing
+import datetime
 
-from api_client import YandexWeatherAPI
-from tasks import (
-    DataFetchingTask,
-    DataCalculationTask,
-    DataAggregationTask,
-    DataAnalyzingTask,
-)
+from tasks import (DataAggregationTask, DataAnalyzingTask, DataCalculationTask,
+                   DataFetchingTask)
 from utils import CITIES
 
 
@@ -17,10 +9,15 @@ def forecast_weather():
     """
     Анализ погодных условий по городам
     """
-    # city_name = "MOSCOW"
-    # ywAPI = YandexWeatherAPI()
-    # resp = ywAPI.get_forecasting(city_name)
-    pass
+    now = datetime.datetime.now()
+    weather_data = DataFetchingTask(CITIES).get_town_weather_data()
+    calculated_weather_data = DataCalculationTask(weather_data).calculated_weather_data()
+    analyzing_towns = DataAnalyzingTask(calculated_weather_data)
+    print(analyzing_towns.get_best_town())
+
+    town_agregator = DataAggregationTask(analyzing_towns.towns_with_rating())
+    town_agregator.town_data_to_json_file()
+    print(datetime.datetime.now() - now)
 
 
 if __name__ == "__main__":

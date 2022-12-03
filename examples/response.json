@@ -76,7 +76,7 @@
     "uv_index": 0,
     "wind_gust": 7.8
   },
-    "forecasts": [
+  "forecasts": [
       {
         "date": "2022-05-18",
         "date_ts": 1652821200,
