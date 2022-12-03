@@ -17,7 +17,7 @@ class DataFetchingTask:
     def __init__(self, cities: dict[str, str]):
         self.cities = cities
 
-    def get_town_weather_data(self) -> list[RespModel]:
+    def get_town_weather_data(self) -> list[Optional[RespModel]]:
         with ThreadPoolExecutor(max_workers=1) as pool:
             weather_data = pool.map(DataFetchingTask.get_town_data, self.cities, chunksize=10)
         return [town for town in weather_data]
@@ -35,6 +35,7 @@ class DataFetchingTask:
             return resp_model
         except ValidationError as e:
             logger.error(f'Error: {e.json()}')
+            return None
 
 
 class DataCalculationTask:

@@ -1,4 +1,4 @@
-from typing import List, Union, Any
+from typing import List, Union, Any, Optional
 
 from pydantic import BaseModel
 
@@ -81,7 +81,7 @@ class TownMathMetods:
         self.total_dry_hours = self._average_dry_hours_in_request_days()
         self.average_temp_in_period = self.calculation_average_temp_in_period()
         self.dry_hours_in_period = self.sum_dry_hours_in_period()
-        self.rating = None
+        self.rating: Optional[int] = None
 
     def calculation_average_temp_in_period(self, start_hour: int = 9, end_hour: int = 19) -> TownAverageTemp:
         town_average_temp = TownAverageTemp(days=[])
@@ -113,14 +113,14 @@ class TownMathMetods:
 
     def _average_temp_in_request_days(self) -> float:
         town_average_temp = self.calculation_average_temp_in_period()
-        sum_temp = 0
+        sum_temp: float = 0
         for day in town_average_temp.days:
             sum_temp += day.average_temp
         return sum_temp / len(town_average_temp.days)
 
     def _average_dry_hours_in_request_days(self) -> float:
         average_dry_hours = self.sum_dry_hours_in_period()
-        dry_hours = 0
+        dry_hours: float = 0
         for day in average_dry_hours.days:
             dry_hours += day.dry_hours
         return dry_hours / len(average_dry_hours.days)
