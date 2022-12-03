@@ -17,6 +17,8 @@ CITIES = {
 }
 ERR_MESSAGE_TEMPLATE = "Something wrong. Please contact with mentor."
 
+TOWN_DATA_FILENAME = 'town_data.json'
+
 MIN_MAJOR_PYTHON_VER = 3
 MIN_MINOR_PYTHON_VER = 9
 

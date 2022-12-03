@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from api_client import YandexWeatherAPI
 from pydantic_dataclass import RespModel, TownMathMetods
+from utils import TOWN_DATA_FILENAME
 
 logger = logging.getLogger()
 
@@ -18,14 +19,17 @@ class DataFetchingTask:
         self.cities = cities
 
     def get_town_weather_data(self) -> list[Optional[RespModel]]:
+        logger.info('Launch of weather assembly in towns')
         with ThreadPoolExecutor(max_workers=1) as pool:
             weather_data = pool.map(DataFetchingTask.get_town_data, self.cities, chunksize=10)
+        logger.info('Towns weather was collected')
         return [town for town in weather_data]
 
     @staticmethod
     def get_town_data(town: str) -> Optional[RespModel]:
         ywAPI = YandexWeatherAPI()
         resp = ywAPI.get_forecasting(town)
+        logger.info(f'{town} weather was get received')
         return DataFetchingTask.validate_town_data(resp, town)
 
     @staticmethod
@@ -73,5 +77,6 @@ class DataAggregationTask:
         self.weather_data = weather_data
 
     def town_data_to_json_file(self) -> None:
-        with open('result.json', 'w') as fp:
+        with open(TOWN_DATA_FILENAME, 'w') as fp:
             json.dump([town.to_dict() for town in self.weather_data], fp, indent=4)
+        logger.info(f'File {TOWN_DATA_FILENAME} was created')
