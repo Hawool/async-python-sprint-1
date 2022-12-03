@@ -89,6 +89,3 @@
 9. Приведите стиль кода в соответствие pep8, flake8, mypy.
 
 ---
-
-<a name="apiusingexample"></a>
-
