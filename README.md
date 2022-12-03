@@ -1,6 +1,17 @@
 # Проектное задание первого спринта
 
-Ваша задача — проанализировать данные по погодным условиям, полученные от API Яндекс Погоды.
+Задача: проанализировать данные по погодным условиям, полученные от API Яндекс Погоды.
+
+## Запуск:
+- `git clone https://github.com/Hawool/async-python-sprint-1.git`
+- `cd async-python-sprint-1`
+- `python -m venv venv`
+- `source venv/bin/activate`
+- `pip install -r requirements.txt`
+- `python3 forecasting.py`
+- Тесты: `pytest`
+
+<a name="apiusingexample"></a>
 
 ## Описание задания
 
@@ -81,12 +92,3 @@
 
 <a name="apiusingexample"></a>
 
-## Пример использования `YandexWeatherAPI` для работы с API
-
-```python
-from api_client import YandexWeatherAPI
-
-city_name = "MOSCOW"
-ywAPI = YandexWeatherAPI()
-resp = ywAPI.get_forecasting(city_name)
-```
