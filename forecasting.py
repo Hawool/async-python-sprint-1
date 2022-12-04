@@ -1,10 +1,7 @@
-import logging
-
+from log_settings import logger
 from tasks import (DataAggregationTask, DataAnalyzingTask, DataCalculationTask,
                    DataFetchingTask)
 from utils import CITIES
-
-logger = logging.getLogger()
 
 
 def forecast_weather():
@@ -18,7 +15,7 @@ def forecast_weather():
     print(analyzing_towns.get_best_town())
 
     town_agregator = DataAggregationTask(analyzing_towns.towns_with_rating())
-    town_agregator.town_data_to_json_file()
+    town_agregator.town_data_to_csv_file()
     logger.info('Project stop')
 
 

@@ -1,11 +1,10 @@
-import logging
-from typing import List, Union, Any, Optional
+import csv
+from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel
 
+from log_settings import logger
 from utils import DRY_WEATHER
-
-logger = logging.getLogger()
 
 
 class Town(BaseModel):
@@ -72,7 +71,10 @@ class RespModel(Town):
     forecasts: List[RespForecastModel]
 
 
-class TownMathMetods:
+class TownMathMethods:
+    START_HOUR: int = 9
+    END_HOUR: int = 19
+
     def __init__(self, town: RespModel):
         self.city_name = town.city_name
         self.now = town.now
@@ -80,13 +82,15 @@ class TownMathMetods:
         self.yesterday = town.yesterday
         self.fact = town.fact
         self.forecasts = town.forecasts
-        self.total_average_temp = self._average_temp_in_request_days()
-        self.total_dry_hours = self._average_dry_hours_in_request_days()
         self.average_temp_in_period = self.calculation_average_temp_in_period()
         self.dry_hours_in_period = self.sum_dry_hours_in_period()
+        self.total_average_temp = self._average_temp_in_request_days()
+        self.total_dry_hours = self._average_dry_hours_in_request_days()
         self.rating: Optional[int] = None
 
-    def calculation_average_temp_in_period(self, start_hour: int = 9, end_hour: int = 19) -> TownAverageTemp:
+    def calculation_average_temp_in_period(self,
+                                           start_hour: int = START_HOUR,
+                                           end_hour: int = END_HOUR) -> TownAverageTemp:
         town_average_temp = TownAverageTemp(days=[])
         difference = end_hour - start_hour
         for day in self.forecasts:
@@ -102,7 +106,9 @@ class TownMathMetods:
         logger.info(f'average_temp_in_period was calculated for {self.city_name}')
         return town_average_temp
 
-    def sum_dry_hours_in_period(self, start_hour: int = 9, end_hour: int = 19) -> TownDryHours:
+    def sum_dry_hours_in_period(self,
+                                start_hour: int = START_HOUR,
+                                end_hour: int = END_HOUR) -> TownDryHours:
         town_dry_hours = TownDryHours(days=[])
         for day in self.forecasts:
             hours_sum = 0
@@ -117,18 +123,43 @@ class TownMathMetods:
         return town_dry_hours
 
     def _average_temp_in_request_days(self) -> float:
-        town_average_temp = self.calculation_average_temp_in_period()
-        sum_temp: float = 0
-        for day in town_average_temp.days:
-            sum_temp += day.average_temp
-        return sum_temp / len(town_average_temp.days)
+        sum_temp: float = sum(day.average_temp for day in self.average_temp_in_period.days)
+        return round(sum_temp / len(self.average_temp_in_period.days), 1)
 
     def _average_dry_hours_in_request_days(self) -> float:
-        average_dry_hours = self.sum_dry_hours_in_period()
-        dry_hours: float = 0
-        for day in average_dry_hours.days:
-            dry_hours += day.dry_hours
-        return dry_hours / len(average_dry_hours.days)
+        dry_hours: float = sum(day.dry_hours for day in self.dry_hours_in_period.days)
+        return round(dry_hours / len(self.dry_hours_in_period.days), 1)
+
+    def get_day_headers(self) -> list[str]:
+        days_date = []
+        for day in self.average_temp_in_period.days:
+            days_date.append(day.date)
+        return days_date
+
+    def get_first_row_town_data_for_csv(self):
+
+        return [
+            self.city_name,
+            'Температура, среднее',
+            *[day.average_temp for day in self.average_temp_in_period.days],
+            self.total_average_temp,
+            self.rating
+        ]
+
+    def get_second_row_town_data_for_csv(self):
+        return [
+            '',
+            'Без осадков, часов',
+            *[day.dry_hours for day in self.dry_hours_in_period.days],
+            self.total_average_temp,
+            ''
+        ]
+
+    def write_data_in_csv_file(self, filename: str) -> None:
+        with open(filename, 'a', newline='') as f:
+            writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
+            writer.writerow(self.get_first_row_town_data_for_csv())
+            writer.writerow(self.get_second_row_town_data_for_csv())
 
     def to_dict(self) -> dict[str, Any]:
         return {

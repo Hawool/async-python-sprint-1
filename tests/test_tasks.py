@@ -9,7 +9,7 @@ class MockDataFetchingTask(DataFetchingTask):
     @staticmethod
     def get_town_data(town: str):
         path_test = Path(__file__).resolve().parent
-        with open(str(Path(path_test, 'test_data/resp_town_data.json'))) as json_file:
+        with open(str(Path(path_test, 'test_data/test_resp_town_data.json'))) as json_file:
             data = json.load(json_file)
         return DataFetchingTask.validate_town_data(data.get(town), town)
 

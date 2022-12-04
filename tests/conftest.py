@@ -3,13 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from pydantic_dataclass import TownAverageTemp, DayAverageTemp, TownDryHours, DayDryHours
+from pydantic_dataclass import (DayAverageTemp, DayDryHours, TownAverageTemp,
+                                TownDryHours)
 
 
 @pytest.fixture(scope='function')
 def resp_data():
     path_test = Path(__file__).resolve().parent
-    with open(str(Path(path_test, 'test_data/resp_town_data.json'))) as json_file:
+    with open(str(Path(path_test, 'test_data/test_resp_town_data.json'))) as json_file:
         data = json.load(json_file)
     return data
 

@@ -3,3 +3,6 @@ creds.ini
 .idea/
 __pycache__/
 *.pyc
+*log.log
+*town_data.json
+*town_data.csv

@@ -1,10 +1,8 @@
 import json
-import logging
 from urllib.request import urlopen
 
+from log_settings import logger
 from utils import CITIES, ERR_MESSAGE_TEMPLATE
-
-logger = logging.getLogger()
 
 
 class YandexWeatherAPI:
