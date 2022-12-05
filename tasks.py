@@ -14,8 +14,8 @@ from utils import TOWN_DATA_FILENAME_CSV, TOWN_DATA_FILENAME_JSON
 
 @dataclass
 class DataFetchingTask:
-    ywAPI = YandexWeatherAPI()
     """Class for getting weather data for cities"""
+    yandex_api = YandexWeatherAPI()
     cities: dict[str, str]
 
     def get_town_weather_data(self) -> list[Optional[RespModel]]:
@@ -26,7 +26,7 @@ class DataFetchingTask:
         return [town for town in weather_data]
 
     def get_town_data(self, town: str) -> Optional[RespModel]:
-        resp = self.ywAPI.get_forecasting(town)
+        resp = self.yandex_api.get_forecasting(town)
         logger.info(f'{town} weather was get received')
         return DataFetchingTask.validate_town_data(resp, town)
 
@@ -79,6 +79,12 @@ class DataAggregationTask:
             json.dump([town.to_dict() for town in self.weather_data], fp, indent=4)
         logger.info(f'File {TOWN_DATA_FILENAME_JSON} was created')
 
+    def _write_headers_in_csv(self):
+        with open(TOWN_DATA_FILENAME_CSV, 'w', newline='') as f:
+            writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
+            f.writelines('sep=,' + '\n')
+            writer.writerow(['Город/день', '', *self.weather_data[0].get_day_headers(), 'Среднее', 'Рейтинг'])
+
     def town_data_to_csv_file(self) -> None:
         """
         Сделал два варианта решения, синхронный (закомментированный) и через потоки
@@ -91,19 +97,13 @@ class DataAggregationTask:
         В итоге, если бы я применял это на практике, то выбрал бы синхронный вариант.
         Или я что-то недопонимаю ‾\_(ツ)_/‾
         """
-        # with open(TOWN_DATA_FILENAME_CSV, 'w', newline='') as f:
+        # self._write_headers_in_csv()
+        # with open(TOWN_DATA_FILENAME_CSV, 'a', newline='') as f:
         #     writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
-        #     f.writelines('sep=,' + '\n')
-        #     writer.writerow(['Город/день', '', *self.weather_data[0].get_day_headers(), 'Среднее', 'Рейтинг'])
         #     for town in self.weather_data:
         #         writer.writerow(town.get_first_row_town_data_for_csv())
         #         writer.writerow(town.get_second_row_town_data_for_csv())
 
-        with open(TOWN_DATA_FILENAME_CSV, 'w', newline='') as f:
-            writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
-            f.writelines('sep=,' + '\n')
-            writer.writerow(['Город/день', '', *self.weather_data[0].get_day_headers(), 'Среднее', 'Рейтинг'])
-
+        self._write_headers_in_csv()
         with ThreadPoolExecutor() as pool:
-            for town in self.weather_data:
-                pool.submit(town.write_data_in_csv_file, TOWN_DATA_FILENAME_CSV)
+            pool.map(TownMathMethods.write_data_in_csv_file, self.weather_data)

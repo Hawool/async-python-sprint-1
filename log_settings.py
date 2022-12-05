@@ -1,4 +1,3 @@
-# import logging
 import logging
 from logging.config import dictConfig
 
@@ -9,6 +8,8 @@ LOGGER_CONFIG = {
     'disable_existing_loggers': False,
     'formatters': {
         'default': {
+            # Я тогда в requirements.txt добавил uvicorn==0.20.0, из-за него скорее всего не работает, нужно обновить
+            # Без докера неудобно конечно:)
             '()': 'uvicorn.logging.DefaultFormatter',
             'fmt': '%(levelprefix)s[%(asctime)s - %(filename)s:%(lineno)s - %(funcName)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',

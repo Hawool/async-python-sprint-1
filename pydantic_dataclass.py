@@ -1,10 +1,11 @@
 import csv
+import threading
 from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel
 
 from log_settings import logger
-from utils import DRY_WEATHER
+from utils import DRY_WEATHER, TOWN_DATA_FILENAME_CSV
 
 
 class Town(BaseModel):
@@ -74,6 +75,7 @@ class RespModel(Town):
 class TownMathMethods:
     START_HOUR: int = 9
     END_HOUR: int = 19
+    locker = threading.Lock()
 
     def __init__(self, town: RespModel):
         self.city_name = town.city_name
@@ -155,11 +157,16 @@ class TownMathMethods:
             ''
         ]
 
-    def write_data_in_csv_file(self, filename: str) -> None:
-        with open(filename, 'a', newline='') as f:
+    def write_data_in_csv_file(self) -> None:
+        """
+        Cделал на всякий случай блокировку перед открытием файла, думаю можно блокировку поставить и после открытия.
+        """
+        self.locker.acquire()
+        with open(TOWN_DATA_FILENAME_CSV, 'a', newline='') as f:
             writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
             writer.writerow(self.get_first_row_town_data_for_csv())
             writer.writerow(self.get_second_row_town_data_for_csv())
+        self.locker.release()
 
     def to_dict(self) -> dict[str, Any]:
         return {
